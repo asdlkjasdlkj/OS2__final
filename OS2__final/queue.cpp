@@ -28,7 +28,7 @@ void release(Queue* queue) {
 Node* nalloc(Item item) {
     Node* node = new Node;
     if (node != nullptr) {
-        node->item = item;  // 얕은 복사 (Item.value는 호출 측에서 관리)
+        node->item = item;
         node->next = nullptr;
     }
     return node;
@@ -48,8 +48,47 @@ Node* nclone(Node* node) {
 }
 
 Reply enqueue(Queue* queue, Item item) {
-	Reply reply = { false, NULL };
-	return reply;
+    Reply rep;
+    rep.success = false;
+
+    Node* newNode = nalloc(item);
+    if (!newNode)
+        return rep;
+    {
+        std::lock_guard<std::mutex> lock(queue->mtx);
+
+        if (queue->head == nullptr) {
+            queue->head = newNode;
+            queue->tail = newNode;
+        }
+        else {
+            Node* curr = queue->head;
+            Node* prev = nullptr;
+
+            while (curr != nullptr) {
+                if (curr->item.key == item.key) {
+                    curr->item.value = item.value;
+                    rep.success = true;
+                    return rep;
+                }
+                prev = curr;
+                curr = curr->next;
+            }
+            if (item.key > queue->head->item.key) {
+                newNode->next = queue->head;
+                queue->head = newNode;
+            }
+            else {
+                prev->next = newNode;
+                newNode->next = curr;
+                if (newNode->next == nullptr) {
+                    queue->tail = newNode;
+                }
+            }
+        }
+    }
+    rep.success = true;
+    return rep;
 }
 
 Reply dequeue(Queue* queue) {

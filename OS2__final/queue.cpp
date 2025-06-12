@@ -26,19 +26,26 @@ void release(Queue* queue) {
 }
 
 Node* nalloc(Item item) {
-	return NULL;
+    Node* node = new Node;
+    if (node != nullptr) {
+        node->item = item;  // 얕은 복사 (Item.value는 호출 측에서 관리)
+        node->next = nullptr;
+    }
+    return node;
 }
-
 
 void nfree(Node* node) {
-	return;
+    delete node;
 }
-
 
 Node* nclone(Node* node) {
-	return NULL;
+    if (!node)
+        return nullptr;
+    Node* newNode = new Node;
+    newNode->item = node->item;
+    newNode->next = nullptr;
+    return newNode;
 }
-
 
 Reply enqueue(Queue* queue, Item item) {
 	Reply reply = { false, NULL };

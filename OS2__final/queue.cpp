@@ -92,8 +92,22 @@ Reply enqueue(Queue* queue, Item item) {
 }
 
 Reply dequeue(Queue* queue) {
-	Reply reply = { false, NULL };
-	return reply;
+    Reply rep;
+    rep.success = false;
+    {
+        std::lock_guard<std::mutex> lock(queue->mtx);
+        if (queue->head == nullptr) {
+            return rep;
+        }
+        Node* temp = queue->head;
+        rep.item = temp->item;
+        queue->head = queue->head->next;
+        if (queue->head == nullptr)
+            queue->tail = nullptr;
+        delete temp;
+        rep.success = true;
+    }
+    return rep;
 }
 
 Queue* range(Queue* queue, Key start, Key end) {

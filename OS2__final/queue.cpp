@@ -1,19 +1,31 @@
 #include <iostream>
 #include "queue.h"
 
-
 Queue* init(void) {
-	return NULL;
+    Queue* q = new Queue;
+    q->head = nullptr;
+    q->tail = nullptr;
+    return q;
 }
-
 
 void release(Queue* queue) {
-	return;
+    if (!queue)
+        return;
+    {
+        std::lock_guard<std::mutex> lock(queue->mtx);
+        Node* curr = queue->head;
+        while (curr != nullptr) {
+            Node* next = curr->next;
+            delete curr;
+            curr = next;
+        }
+        queue->head = nullptr;
+        queue->tail = nullptr;
+    }
+    delete queue;
 }
 
-
 Node* nalloc(Item item) {
-	// Node 생성, item으로 초기화
 	return NULL;
 }
 
